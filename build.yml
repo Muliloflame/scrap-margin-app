@@ -1,0 +1,39 @@
+name: Build Android APK
+
+# Runs automatically whenever you push a change to the main branch,
+# or you can trigger it manually from the Actions tab on GitHub.
+on:
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install system dependencies
+        run: |
+          sudo apt update
+          sudo apt install -y python3-pip build-essential git python3-dev \
+            ffmpeg libsdl2-dev libsdl2-image-dev libsdl2-mixer-dev libsdl2-ttf-dev \
+            libportmidi-dev libswscale-dev libavformat-dev libavcodec-dev \
+            zlib1g-dev openjdk-17-jdk unzip
+
+      - name: Install Buildozer
+        run: pip install --upgrade buildozer cython
+
+      - name: Build APK
+        run: buildozer -v android debug
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: scrap-margin-apk
+          path: bin/*.apk
